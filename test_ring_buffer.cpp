@@ -77,7 +77,7 @@ void* rb_reader(void *p_arg){
                 return NULL;
             }
         }else{
-            usleep(1);
+            usleep(100);
         }
     }
     printf("check success\n");
@@ -154,7 +154,9 @@ int main(){
     gettimeofday(&t1, NULL);
     rb_1writter_1reader();
     gettimeofday(&t2, NULL);
-    printf("20Byte:time used %ld ms\n", 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec);
+    unsigned long t = 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec;
+    unsigned long qps = (double)CHECK_LEN / t * 1000 * 1000; 
+    printf("20Byte:time used %ld ms qps %ld\n", t, qps);
     //rb_3writter_1reader();
     //rb_1writter_3reader();
 }
