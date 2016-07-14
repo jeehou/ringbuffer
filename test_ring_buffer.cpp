@@ -4,11 +4,25 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include "atomic_ops.h"
 
 #define RB_SIZE (1024*1024)
 #define CHECK_LEN (1024*1024*10)
 
+#define WATCH(func)\
+    {\
+    b_enable_check = false;\
+    timeval t1, t2;\
+    gettimeofday(&t1, NULL);\
+    func;\
+    gettimeofday(&t2, NULL);\
+    unsigned long t = 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec;\
+    unsigned long qps = (double)CHECK_LEN / t * 1000 * 1000;\
+    printf("32 Byte %s :time used %ld ms qps %ld\n", #func, t, qps);\
+    }\
+
 static bool b_enable_check = true;
+static int stop_thread = 0;
 
 unsigned int crc32(unsigned int crc, const void *buf, int size);
 
@@ -22,6 +36,7 @@ struct rb_thread_arg{
     void       *p_mem;
     int         count;
 };
+
 
 void rb_ctx_create(rb_ctx *p_ctx){
     if(!b_enable_check) return;
@@ -44,7 +59,7 @@ void* rb_writter(void *p_arg){
     rb_thread_arg *a = (rb_thread_arg*)p_arg;
     int writted = 0;
     while(true){
-        if(writted >= a->count){
+        if(writted >= a->count || stop_thread > 0){
             break;
         }
         rb_ctx ctx;
@@ -63,7 +78,7 @@ void* rb_reader(void *p_arg){
     int readed = 0;
     rb_thread_arg *a = (rb_thread_arg*)p_arg;
     while(true){
-        if(readed >= a->count){
+        if(readed >= a->count || stop_thread > 0){
             break;
         }
         rb_ctx ctx;
@@ -72,19 +87,48 @@ void* rb_reader(void *p_arg){
         if(ret == 0){
             readed++;
             if(!rb_ctx_check(&ctx)){
-                printf("!!!check error!!!\n");
+                printf("!!!check error!!!");
+                AtomicAdd(&stop_thread, 1);
                 return NULL;
             }
         }else{
             usleep(100);
         }
     }
-    printf("check success\n");
     return NULL;
 }
 
-void rb_1writter_1reader(){
-    printf("begin check 1 writter & 1 reader:");
+void* rb_peeker(void *p_arg){
+    int readed = 0;
+    rb_thread_arg *a = (rb_thread_arg*)p_arg;
+    while(true){
+        if(readed >= a->count || stop_thread > 0){
+            break;
+        }
+        unsigned int len = 0; 
+        rb_ctx *p_ctx = (rb_ctx*)a->p_rb->peek(&len, 0, a->p_mem);
+        if(p_ctx){
+            readed ++;
+            a->p_rb->remove(a->p_mem);
+            if(!rb_ctx_check(p_ctx)){
+                printf("!!!check error!!!");
+                AtomicAdd(&stop_thread, 1);
+                return NULL;
+            }
+        }else{
+            usleep(100);
+        }
+    }
+    return NULL;
+}
+
+void rb_1writter_1reader(bool peeker){
+    stop_thread = 0;
+    if(peeker){
+        printf("begin check 1 writter & 1 peeker:");
+    }else{
+        printf("begin check 1 writter & 1 reader:");
+    }
     void *p_mem = malloc(RB_SIZE);
     RingBuffer rb(RB_SIZE, false, false);
     rb_thread_arg thread_info;
@@ -93,12 +137,18 @@ void rb_1writter_1reader(){
     thread_info.p_mem = p_mem;
     pthread_t thread_writter, thread_reader;
     pthread_create(&thread_writter, NULL, rb_writter, &thread_info);
-    pthread_create(&thread_reader, NULL, rb_reader, &thread_info);
+    if(peeker){
+        pthread_create(&thread_reader, NULL, rb_peeker, &thread_info);
+    }else{
+        pthread_create(&thread_reader, NULL, rb_reader, &thread_info);
+    }
     pthread_join(thread_reader, NULL);
+    printf(":check over\n");
     free(p_mem);
 }
 
 void rb_3writter_1reader(){
+    stop_thread = 0;
     printf("begin check 3 writter & 1 reader:");
     void *p_mem = malloc(RB_SIZE);
     RingBuffer rb(RB_SIZE, false, false);
@@ -118,10 +168,15 @@ void rb_3writter_1reader(){
     thread_info_reader.p_mem = p_mem;
     pthread_create(&thread_reader, NULL, rb_reader, &thread_info_reader);
     pthread_join(thread_reader, NULL);
+    for(int i=0; i!=3; ++i){
+        pthread_join(thread_writter[i], NULL);
+    }
+    printf(":check over\n");
     free(p_mem);
 }
 
 void rb_1writter_3reader(){
+    stop_thread = 0;
     printf("begin check 1 writter & 3 reader:");
     void *p_mem = malloc(RB_SIZE);
     RingBuffer rb(RB_SIZE, false, false);
@@ -143,22 +198,19 @@ void rb_1writter_3reader(){
     for(int i=0; i!=3; ++i){
         pthread_join(thread_reader[i], NULL);
     }
+    printf(":check over\n");
     free(p_mem);
 }
 
+
 int main(){
-    rb_1writter_1reader();
-    /*
-    b_enable_check = false;
-    timeval t1, t2;
-    gettimeofday(&t1, NULL);
-    rb_1writter_1reader();
-    gettimeofday(&t2, NULL);
-    unsigned long t = 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec;
-    unsigned long qps = (double)CHECK_LEN / t * 1000 * 1000; 
-    printf("20Byte:time used %ld ms qps %ld\n", t, qps);
-    */
-    //rb_3writter_1reader();
+    rb_1writter_1reader(false);
+    rb_3writter_1reader();
     rb_1writter_3reader();
+
+    rb_1writter_1reader(true);
+
+    WATCH(rb_1writter_1reader(false));
+    WATCH(rb_1writter_1reader(true));
 }
 

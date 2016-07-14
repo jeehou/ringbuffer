@@ -12,8 +12,8 @@
 #define MAGIC_PEEK ((unsigned int)-1)
 
 RingBuffer::RingBuffer(unsigned int size, bool real_size, bool real_count):
-    m_b_real_size(real_size), m_b_real_count(real_count),m_tail(0), m_head(0),
-    m_real_size(0), m_real_count(0), m_size(size) 
+    m_id(0),m_b_real_size(real_size), m_b_real_count(real_count),m_tail(0), m_head(0),
+    m_real_size(0), m_real_count(0), m_size(size)
 {}
 
 RingBuffer::~RingBuffer(){
@@ -87,14 +87,14 @@ void* RingBuffer::peek(unsigned int *len, unsigned int offset, const void *p_mem
     unsigned char *p_base = (unsigned char*)const_cast<void*>(p_mem);
     do{
         cur_read = m_tail;
-        if(offset != 0) cur_read += (offset + sizeof(unsigned int));
         cur_max_read = m_head;
+        if(offset != 0) cur_read += (offset + sizeof(unsigned int));
         if(cur_read == cur_max_read){
             return NULL; //empty
         }
         *len = *(unsigned int*)(p_base + countToIndex(cur_read));
         if(*len != MAGIC_PEEK){
-            p_ret = p_base + countToIndex(cur_read) + sizeof(len);
+            p_ret = p_base + countToIndex(cur_read) + sizeof(unsigned int);
             //if(CAS(&m_tail, cur_read, cur_read)){
             return p_ret;
             //}
@@ -111,7 +111,6 @@ int RingBuffer::remove(const void *p_mem){
     unsigned int cur_max_read;
     unsigned int cur_read;
     unsigned int len;
-    //void *p_ret = NULL;
     unsigned char *p_base = (unsigned char*)const_cast<void*>(p_mem);
     do{
         cur_read = m_tail;
@@ -121,9 +120,9 @@ int RingBuffer::remove(const void *p_mem){
         }
         len = *(unsigned int*)(p_base + countToIndex(cur_read));
         if(len != MAGIC_PEEK){
-            if(CAS(&m_tail, cur_read, cur_read + len + sizeof(len))){
+            if(CAS(&m_tail, cur_read, cur_read + len + sizeof(unsigned int))){
                 if(m_b_real_count) AtomicAdd(&m_real_count, -1);
-                if(m_b_real_size) AtomicAdd(&m_real_size, -(long)(len+sizeof(len)));
+                if(m_b_real_size) AtomicAdd(&m_real_size, -(long)(len+sizeof(unsigned int)));
                 return 0;
             }
         }else{

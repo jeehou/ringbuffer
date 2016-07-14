@@ -7,7 +7,7 @@ class RingBuffer{
 public:
 	/// @brief WARNING：size must pow2
 	///        if left size of count in buffer is considered, please set true
-	///        注意:出于性能考虑，real_size和real_count在没有需要的时候建议关闭
+	///        for better performance，real_size and real_count may set false
 	RingBuffer(unsigned int size, bool real_size = true, bool real_count = true);
 	
 	~RingBuffer();
@@ -19,6 +19,7 @@ public:
 	int pop(void *p_buf, unsigned int *len, const void *p_mem);
 
 	/// @brief fail:NULL
+    //         WARNING:ONLY SUPPORT ONE READER AND ONE WRITTER!
 	void* peek(unsigned int *len, unsigned int offset = 0, const void *p_mem = 0);
 
 	/// @brief for use after peek
@@ -53,10 +54,10 @@ private:
 	int                     m_id;
 	const bool              m_b_real_size;
 	const bool              m_b_real_count;
-	volatile unsigned int   m_tail;
-	volatile unsigned int   m_head;
-	volatile unsigned int   m_real_size;
-	volatile unsigned int   m_real_count;
+	unsigned int   m_tail;
+	unsigned int   m_head;
+	unsigned int   m_real_size;
+	unsigned int   m_real_count;
 	const unsigned int      m_size;
 };
 
