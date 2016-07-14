@@ -116,7 +116,7 @@ int RingBuffer::remove(const void *p_mem){
         cur_read = m_tail;
         cur_max_read = m_head;
         if(cur_read == cur_max_read){
-            return NULL; //empty
+            return -1; //empty
         }
         len = *(unsigned int*)(p_base + countToIndex(cur_read));
         if(len != MAGIC_PEEK){
