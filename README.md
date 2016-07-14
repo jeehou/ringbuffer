@@ -32,4 +32,4 @@ unsigned int len = 0;
 rb_ctx *p_ctx = (rb_ctx*)rb.peek(&len, 0, p_mem);
 ```
 
-Also more example about how to use, please refer to [test_ring_buffer.cpp](jeehou/test_ring_buffer.cpp)
+Also more example about how to use, please refer to test_ring_buffer.cpp](test_ring_buffer.cpp)
