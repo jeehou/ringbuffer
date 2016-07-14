@@ -7,7 +7,7 @@ just include atomic_ops.h ring_buffer.h ring_buffer.cpp to your Makefile or othe
 
 Sample
 ======
-how to push
+How to push
 ----
 ```c++
 void *p_mem = malloc(RB_SIZE);
@@ -16,7 +16,7 @@ rb_ctx ctx;
 rb.push(&ctx, sizeof(ctx), p_mem);
 ```
 
-how to pop
+How to pop
 ----------
 ```c++
 rb_ctx ctx;
@@ -24,7 +24,7 @@ unsigned int len = 0;
 rb.pop(&ctx, &len, p_mem); //p_mem same buffer as push
 ```
 
-and an other way to get data
+And an other way to get data
 ----------------------------
 For better performarce, you can get data without copy it to an other buffer.
 ```c++
