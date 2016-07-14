@@ -10,9 +10,11 @@
 
 static bool b_enable_check = true;
 
+unsigned int crc32(unsigned int crc, const void *buf, int size);
+
 struct rb_ctx{
-    int chunk;
-    unsigned char data[16];
+    unsigned int chunk;
+    unsigned char data[32];
 };
 
 struct rb_thread_arg{
@@ -27,17 +29,14 @@ void rb_ctx_create(rb_ctx *p_ctx){
     size_t l = sizeof(p_ctx->data);
     for(size_t i=0; i!=l; ++i){
         p_ctx->data[i] = rand() % 200;
-        p_ctx->chunk += p_ctx->data[i];
     }
+    p_ctx->chunk = crc32(0, p_ctx->data, l);
 }
 
 bool rb_ctx_check(rb_ctx *p_ctx){
     if(!b_enable_check) return true;
-    int chunk = 0;
     size_t l = sizeof(p_ctx->data);
-    for(size_t i=0; i!=l; ++i){
-        chunk += p_ctx->data[i];
-    }
+    unsigned int chunk = crc32(0, p_ctx->data, l);
     return chunk == p_ctx->chunk;
 }
 
@@ -149,6 +148,7 @@ void rb_1writter_3reader(){
 
 int main(){
     rb_1writter_1reader();
+    /*
     b_enable_check = false;
     timeval t1, t2;
     gettimeofday(&t1, NULL);
@@ -157,7 +157,8 @@ int main(){
     unsigned long t = 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec;
     unsigned long qps = (double)CHECK_LEN / t * 1000 * 1000; 
     printf("20Byte:time used %ld ms qps %ld\n", t, qps);
+    */
     //rb_3writter_1reader();
-    //rb_1writter_3reader();
+    rb_1writter_3reader();
 }
 

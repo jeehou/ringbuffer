@@ -32,6 +32,9 @@
 /// @return the contents of *a_ptr before the operation
 #define CASVal(a_ptr, a_oldVal, a_newVal) __sync_val_compare_and_swap(a_ptr, a_oldVal, a_newVal)
 
+#define rmb() __asm__ __volatile__("lfence":::"memory")
+#define wmb() __asm__ __volatile__("sfence":::"memory")
+
 #else
 #include <Windows.h>
 #define AtomicAdd(a_ptr, a_count) InterlockedExchangeAdd((LONG*)a_ptr, a_count)

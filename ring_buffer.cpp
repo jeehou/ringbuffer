@@ -25,13 +25,16 @@ unsigned int RingBuffer::countToIndex(unsigned int value){
 
 int RingBuffer::push(const void *p_buf, unsigned int len, const void *p_mem){
     unsigned int peek_len = MAGIC_PEEK;
+    rmb();
     unsigned int cur_head = m_head;
     unsigned int cur_tail = m_tail;
     unsigned char *p_base = (unsigned char*)const_cast<void*>(p_mem);
+    rmb();
     if(cur_head - cur_tail + len + sizeof(len) > m_size){
         //printf("full cur_head %u len %d cur_tail %u m_size %d \n",cur_head,len,cur_tail,m_size);
         return -1; //full
     }
+    rmb();
     if(countToIndex(m_head) + len + sizeof(len) > m_size){ //for peek
         memcpy(p_base+countToIndex(cur_head), &peek_len, sizeof(len));
         AtomicAdd(&m_head, m_size - countToIndex(m_head));
@@ -52,6 +55,7 @@ int RingBuffer::pop(void *p_buf, unsigned int *len, const void *p_mem){
     unsigned int in_len = *len;
     unsigned char *p_base = (unsigned char*)const_cast<void*>(p_mem);
     do{
+        rmb();
         cur_read = m_tail;
         cur_max_read = m_head;
         if(cur_read == cur_max_read){
