@@ -7,7 +7,7 @@
 #include "atomic_ops.h"
 
 #define RB_SIZE (1024*1024)
-#define CHECK_LEN (1024*1024*10)
+#define CHECK_LEN (1024*1024)
 
 #define WATCH(func, size)\
     {\
@@ -17,7 +17,7 @@
     func;\
     gettimeofday(&t2, NULL);\
     unsigned long t = 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec;\
-    unsigned long qps = (double)CHECK_LEN / t * 1000 * 1000;\
+    unsigned long qps = 1000 * 1000 * CHECK_LEN / t;\
     printf("%d Byte %s :time used %ld ms qps %ld\n", size, #func, t, qps);\
     }\
 
