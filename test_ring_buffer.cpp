@@ -8,7 +8,7 @@
 
 #define RB_SIZE_BIG (1024*1024*500)
 #define RB_SIZE_SMALL (1024*1024)
-#define CHECK_LEN (1024*1024*10)
+#define CHECK_LEN (1024*1024)
 
 #define WATCH(func, size)\
     {\
@@ -105,8 +105,12 @@ void* rb_reader(void *p_arg){
                 AtomicAdd(&stop_thread, 1);
                 return NULL;
             }
+        }else if(ret == -2){    
+            printf("!!!check error len!!!");
+            AtomicAdd(&stop_thread, 1);
+            return NULL;
         }else{
-            usleep(100);
+            usleep(10);
         }
     }
     return NULL;
@@ -125,13 +129,13 @@ void* rb_peeker(void *p_arg){
         if(p_ctx){
             readed ++;
             a->p_rb->remove(a->p_mem);
-            if(!rb_ctx_check(p_ctx)){
+            if(!rb_ctx_check(p_ctx) || len != sizeof(T)){
                 printf("!!!check error!!!");
                 AtomicAdd(&stop_thread, 1);
                 return NULL;
             }
         }else{
-            usleep(100);
+            usleep(10);
         }
     }
     return NULL;
@@ -222,19 +226,7 @@ void rb_1writter_3reader(int size){
 
 
 int main(){
-    rb_1writter_1reader<rb_ctx>(false, RB_SIZE_SMALL);
-    rb_3writter_1reader<rb_ctx>(RB_SIZE_SMALL);
-    rb_1writter_3reader<rb_ctx>(RB_SIZE_SMALL);
-
-    rb_1writter_1reader<rb_ctx>(true, RB_SIZE_SMALL);
-
-    printf("test for big ringbuffer size\n");
-    WATCH(rb_1writter_1reader<rb_ctx>(false, RB_SIZE_BIG), 32);
-    WATCH(rb_1writter_1reader<rb_ctx>(true, RB_SIZE_BIG), 32);
-    WATCH(rb_1writter_1reader<rb_ctx_128>(false, RB_SIZE_BIG), 128);
-    WATCH(rb_1writter_1reader<rb_ctx_128>(true, RB_SIZE_BIG), 128);
-    WATCH(rb_1writter_1reader<rb_ctx_4096>(false, RB_SIZE_BIG), 4096);
-    WATCH(rb_1writter_1reader<rb_ctx_4096>(true, RB_SIZE_BIG), 4096);
+    rb_1writter_3reader<rb_ctx_128>(RB_SIZE_BIG);
 
     printf("test for small ringbuffer size\n");
     WATCH(rb_1writter_1reader<rb_ctx>(false, RB_SIZE_SMALL), 32);
@@ -244,5 +236,12 @@ int main(){
     WATCH(rb_1writter_1reader<rb_ctx_4096>(false, RB_SIZE_SMALL), 4096);
     WATCH(rb_1writter_1reader<rb_ctx_4096>(true, RB_SIZE_SMALL), 4096);
 
+    printf("test for big ringbuffer size\n");
+    WATCH(rb_1writter_1reader<rb_ctx>(false, RB_SIZE_BIG), 32);
+    WATCH(rb_1writter_1reader<rb_ctx>(true, RB_SIZE_BIG), 32);
+    WATCH(rb_1writter_1reader<rb_ctx_128>(false, RB_SIZE_BIG), 128);
+    WATCH(rb_1writter_1reader<rb_ctx_128>(true, RB_SIZE_BIG), 128);
+    WATCH(rb_1writter_1reader<rb_ctx_4096>(false, RB_SIZE_BIG), 4096);
+    WATCH(rb_1writter_1reader<rb_ctx_4096>(true, RB_SIZE_BIG), 4096);
 }
 

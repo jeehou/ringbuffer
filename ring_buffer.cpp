@@ -1,8 +1,8 @@
-#include "ring_buffer.h"
 #include "atomic_ops.h"
 #include <memory.h>
 #include <assert.h>
 #include <stdio.h>
+#include "ring_buffer.h"
 
 /* peek操作说明，当push数据大于m_data_buffer的剩余数据，为了避免将数据分放到不连续内存，
  * 会将m_data_buffer剩余数据写一个MAGIC_PEEK标识数据不再使用，真实数据从m_data_buffer的
@@ -13,11 +13,23 @@
 
 RingBuffer::RingBuffer(unsigned int size, bool real_size, bool real_count):
     m_id(0),m_b_real_size(real_size), m_b_real_count(real_count),m_tail(0), m_head(0),
-    m_real_size(0), m_real_count(0), m_size(size)
-{}
+    m_real_size(0), m_real_count(0), m_size(size){
 
-RingBuffer::~RingBuffer(){
+    unsigned int powersOfTwo[32] = {
+    1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,
+    65536,131072,262144,524288,1048576,2097152,4194304,8388608,
+    16777216,33554432,67108864,134217728,268435456,536870912,
+    1073741824,2147483648};
+
+    int exponent = 0;
+    while (powersOfTwo[exponent] < x && exponent < 31)
+        exponent++;
+    if(size != powersOfTwo[exponent] && exponent > 1){
+        m_size = powersOfTwo[exponent-1];
+    }
 }
+
+RingBuffer::~RingBuffer(){}
 
 unsigned int RingBuffer::countToIndex(unsigned int value){
     return (value & (m_size - 1));
