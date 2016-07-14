@@ -1,9 +1,12 @@
 # ringbuffer
 Crossplatform lock free ringbuffer.
+Support one reader and one writter,or multi reader and one WRITTER.
+NOT SUPPORT MULTI READER AND MULTI WRITTER or ONE READER AND MULTI WRITTER.
+If you want to multi writter, you should create multi ringbuffer.
 
 How to use?
 ===========
-just include atomic_ops.h ring_buffer.h ring_buffer.cpp to your Makefile or other else
+Just include atomic_ops.h ring_buffer.h ring_buffer.cpp to your Makefile or other else
 
 Sample
 ======
