@@ -8,7 +8,7 @@ public:
 	/// @brief WARNING£ºsize must pow2
 	///        if left size of count in buffer is considered, please set true
 	///        for better performance£¬real_size and real_count may set false
-	RingBuffer(unsigned int size, bool real_size = true, bool real_count = true);
+	RingBuffer(unsigned int size, bool real_size = true, bool real_count = true, bool auto_pow2 = false);
 	
 	~RingBuffer();
 
@@ -38,10 +38,6 @@ public:
 
 	/// @brief return the num of data left in buffer
 	unsigned int count();
-
-	void* getMemory();
-
-	void  setMemory(void *p_buf);
 
 	void setId(int id);
 

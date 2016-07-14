@@ -11,10 +11,10 @@
 
 #define MAGIC_PEEK ((unsigned int)-1)
 
-RingBuffer::RingBuffer(unsigned int size, bool real_size, bool real_count):
+RingBuffer::RingBuffer(unsigned int size, bool real_size, bool real_count, bool auto_pow2):
     m_id(0),m_b_real_size(real_size), m_b_real_count(real_count),m_tail(0), m_head(0),
-    m_real_size(0), m_real_count(0), m_size(size){
-
+    m_real_size(0), m_real_count(0), m_size(size)
+{
     unsigned int powersOfTwo[32] = {
     1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,
     65536,131072,262144,524288,1048576,2097152,4194304,8388608,
@@ -24,8 +24,13 @@ RingBuffer::RingBuffer(unsigned int size, bool real_size, bool real_count):
     int exponent = 0;
     while (powersOfTwo[exponent] < size && exponent < 31)
         exponent++;
+
     if(size != powersOfTwo[exponent] && exponent > 1){
-        m_size = powersOfTwo[exponent-1];
+        if(auto_pow2){
+            m_size = powersOfTwo[exponent-1];
+        }else{
+            printf("size is not pow2!!!\n");
+        }
     }
 }
 
