@@ -6,8 +6,8 @@ If you want to multi writter, you should create multi ringbuffer.
 
 How to use?
 ===========
--Just include atomic_ops.h ring_buffer.h ring_buffer.cpp to your Makefile or other else.
--In the source folder,and make will compile a test bin for you.
+* Just include atomic_ops.h ring_buffer.h ring_buffer.cpp to your Makefile or other else.
+* In the source folder,and make will compile a test bin for you.
 
 Sample
 ======
