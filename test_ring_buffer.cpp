@@ -18,7 +18,7 @@
     func;\
     gettimeofday(&t2, NULL);\
     unsigned long t = 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec;\
-    unsigned long qps = (double)CHECK_LEN / t * 1000 * 1000;\
+    unsigned long qps = 1000 * 1000 * (unsigned long)CHECK_LEN / t;\
     printf("%4d Byte %60s :time used %ld ms qps %ld\n", size, #func, t, qps);\
     }\
 
