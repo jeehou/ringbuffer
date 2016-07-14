@@ -22,7 +22,7 @@ RingBuffer::RingBuffer(unsigned int size, bool real_size, bool real_count):
     1073741824,2147483648};
 
     int exponent = 0;
-    while (powersOfTwo[exponent] < x && exponent < 31)
+    while (powersOfTwo[exponent] < size && exponent < 31)
         exponent++;
     if(size != powersOfTwo[exponent] && exponent > 1){
         m_size = powersOfTwo[exponent-1];

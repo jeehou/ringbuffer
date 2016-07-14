@@ -54,11 +54,11 @@ private:
 	int                     m_id;
 	const bool              m_b_real_size;
 	const bool              m_b_real_count;
-	unsigned int   m_tail;
-	unsigned int   m_head;
-	unsigned int   m_real_size;
-	unsigned int   m_real_count;
-	const unsigned int      m_size;
+	unsigned int            m_tail;
+	unsigned int            m_head;
+	unsigned int            m_real_size;
+	unsigned int            m_real_count;
+	unsigned int            m_size;
 };
 
 #endif //__RING_BUFFER_H
