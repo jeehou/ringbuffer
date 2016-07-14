@@ -44,8 +44,9 @@ Performance
 ===========
 You can run ./test after compile.
 On my mbp(Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz)
+
 |Bytes Size| Method |    QPS    |
-|----------|--------|-----------|
+|:--------:|:------:|:---------:|
 |32        | pop    |12479897   |
 |32        | peek   |11002642   |
 
