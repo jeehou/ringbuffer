@@ -4,7 +4,7 @@ all:test
 
 SRC=ring_buffer.cpp test_ring_buffer.cpp crc32.cpp
 
-CPPFLAGS=-Wall -g -O3 -Werror 
+CPPFLAGS=-Wall -g -Werror 
 
 LIBS=-lpthread
 
