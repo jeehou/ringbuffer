@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include "atomic_ops.h"
 
-#define RB_SIZE (1024*1024)
+#define RB_SIZE (1024*1024*500)
 #define CHECK_LEN (1024*1024*10)
 
 #define WATCH(func, size)\
@@ -228,11 +228,11 @@ int main(){
 
     rb_1writter_1reader<rb_ctx>(true);
 
+    */
     WATCH(rb_1writter_1reader<rb_ctx>(false), 32);
     WATCH(rb_1writter_1reader<rb_ctx>(true), 32);
     WATCH(rb_1writter_1reader<rb_ctx_128>(false), 128);
     WATCH(rb_1writter_1reader<rb_ctx_128>(true), 128);
-    */
     WATCH(rb_1writter_1reader<rb_ctx_4096>(false), 4096);
     WATCH(rb_1writter_1reader<rb_ctx_4096>(true), 4096);
 }

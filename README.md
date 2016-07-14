@@ -42,8 +42,9 @@ Also more example about how to use, please refer to [test_ring_buffer.cpp](test_
 
 Performance
 ===========
-You can run ./test after compile.
-On my mbp(Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz)
+You can run ./test after compile.  
+On my mbp(Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz).  
+Actually, not like epoll/poll,CPU is wasted on asking.  
 
 |Bytes Size| Method |    QPS    |
 |:--------:|:------:|:---------:|
