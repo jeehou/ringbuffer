@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include "atomic_ops.h"
 
-#define RB_SIZE_BIG (1024*1024*500)
+#define RB_SIZE_BIG (1024*1024*512)
 #define RB_SIZE_SMALL (1024*1024)
 #define CHECK_LEN (1024*1024)
 
