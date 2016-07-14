@@ -6,7 +6,8 @@
 #include <sys/time.h>
 #include "atomic_ops.h"
 
-#define RB_SIZE (1024*1024*500)
+#define RB_SIZE_BIG (1024*1024*500)
+#define RB_SIZE_SMALL (1024*1024)
 #define CHECK_LEN (1024*1024*10)
 
 #define WATCH(func, size)\
@@ -18,7 +19,7 @@
     gettimeofday(&t2, NULL);\
     unsigned long t = 1000*1000*(t2.tv_sec - t1.tv_sec) + t2.tv_usec - t1.tv_usec;\
     unsigned long qps = (double)CHECK_LEN / t * 1000 * 1000;\
-    printf("%d Byte %s :time used %ld ms qps %ld\n", size, #func, t, qps);\
+    printf("%4d Byte %60s :time used %ld ms qps %ld\n", size, #func, t, qps);\
     }\
 
 static bool b_enable_check = true;
@@ -80,7 +81,7 @@ void* rb_writter(void *p_arg){
         if(ret == 0){
             writted++;
         }else{
-            usleep(1);
+            usleep(10);
         }
     }
     return NULL;
@@ -137,15 +138,15 @@ void* rb_peeker(void *p_arg){
 }
 
 template <typename T>
-void rb_1writter_1reader(bool peeker){
+void rb_1writter_1reader(bool peeker, int size){
     stop_thread = 0;
     if(peeker){
         printf("begin check 1 writter & 1 peeker:");
     }else{
         printf("begin check 1 writter & 1 reader:");
     }
-    void *p_mem = malloc(RB_SIZE);
-    RingBuffer rb(RB_SIZE, false, false);
+    void *p_mem = malloc(size);
+    RingBuffer rb(size, false, false);
     rb_thread_arg thread_info;
     thread_info.count = CHECK_LEN;
     thread_info.p_rb = &rb;
@@ -163,11 +164,11 @@ void rb_1writter_1reader(bool peeker){
 }
 
 template <typename T>
-void rb_3writter_1reader(){
+void rb_3writter_1reader(int size){
     stop_thread = 0;
     printf("begin check 3 writter & 1 reader:");
-    void *p_mem = malloc(RB_SIZE);
-    RingBuffer rb(RB_SIZE, false, false);
+    void *p_mem = malloc(size);
+    RingBuffer rb(size, false, false);
     rb_thread_arg thread_info;
     thread_info.count = CHECK_LEN;
     thread_info.p_rb = &rb;
@@ -192,11 +193,11 @@ void rb_3writter_1reader(){
 }
 
 template <typename T>
-void rb_1writter_3reader(){
+void rb_1writter_3reader(int size){
     stop_thread = 0;
     printf("begin check 1 writter & 3 reader:");
-    void *p_mem = malloc(RB_SIZE);
-    RingBuffer rb(RB_SIZE, false, false);
+    void *p_mem = malloc(size);
+    RingBuffer rb(size, false, false);
     rb_thread_arg thread_info;
     thread_info.count = CHECK_LEN*3;
     thread_info.p_rb = &rb;
@@ -221,19 +222,27 @@ void rb_1writter_3reader(){
 
 
 int main(){
-    /*
-    rb_1writter_1reader<rb_ctx>(false);
-    rb_3writter_1reader<rb_ctx>();
-    rb_1writter_3reader<rb_ctx>();
+    rb_1writter_1reader<rb_ctx>(false, RB_SIZE_SMALL);
+    rb_3writter_1reader<rb_ctx>(RB_SIZE_SMALL);
+    rb_1writter_3reader<rb_ctx>(RB_SIZE_SMALL);
 
-    rb_1writter_1reader<rb_ctx>(true);
+    rb_1writter_1reader<rb_ctx>(true, RB_SIZE_SMALL);
 
-    */
-    WATCH(rb_1writter_1reader<rb_ctx>(false), 32);
-    WATCH(rb_1writter_1reader<rb_ctx>(true), 32);
-    WATCH(rb_1writter_1reader<rb_ctx_128>(false), 128);
-    WATCH(rb_1writter_1reader<rb_ctx_128>(true), 128);
-    WATCH(rb_1writter_1reader<rb_ctx_4096>(false), 4096);
-    WATCH(rb_1writter_1reader<rb_ctx_4096>(true), 4096);
+    printf("test for big ringbuffer size\n");
+    WATCH(rb_1writter_1reader<rb_ctx>(false, RB_SIZE_BIG), 32);
+    WATCH(rb_1writter_1reader<rb_ctx>(true, RB_SIZE_BIG), 32);
+    WATCH(rb_1writter_1reader<rb_ctx_128>(false, RB_SIZE_BIG), 128);
+    WATCH(rb_1writter_1reader<rb_ctx_128>(true, RB_SIZE_BIG), 128);
+    WATCH(rb_1writter_1reader<rb_ctx_4096>(false, RB_SIZE_BIG), 4096);
+    WATCH(rb_1writter_1reader<rb_ctx_4096>(true, RB_SIZE_BIG), 4096);
+
+    printf("test for small ringbuffer size\n");
+    WATCH(rb_1writter_1reader<rb_ctx>(false, RB_SIZE_SMALL), 32);
+    WATCH(rb_1writter_1reader<rb_ctx>(true, RB_SIZE_SMALL), 32);
+    WATCH(rb_1writter_1reader<rb_ctx_128>(false, RB_SIZE_SMALL), 128);
+    WATCH(rb_1writter_1reader<rb_ctx_128>(true, RB_SIZE_SMALL), 128);
+    WATCH(rb_1writter_1reader<rb_ctx_4096>(false, RB_SIZE_SMALL), 4096);
+    WATCH(rb_1writter_1reader<rb_ctx_4096>(true, RB_SIZE_SMALL), 4096);
+
 }
 
